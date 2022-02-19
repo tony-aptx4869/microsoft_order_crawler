@@ -10,7 +10,7 @@ The only two strings you need are `__RequestVerificationToken` in HTTPS request'
 
 您需要的唯一两个字符串是 HTTPS 请求标头中的 `__RequestVerificationToken` 和 Cookie 中的 `AMCSecAuth`。
 
-## How to use? | 如何使用
+## How to use? | 如何使用？
 
 Step 1: Get your own `__RequestVerificationToken` and `AMCSecAuth`
 
@@ -27,3 +27,9 @@ Step 4: Run the script `main.py` and the results, a csv file, will be saved in t
 第 3 步：在文件 `config.conf` 中设置您自己的 `__RequestVerificationToken` 和 `AMCSecAuth` 值
 
 第 4 步：运行脚本 `main.py`，结果，一个 csv 文件，将保存在目录 `csv_files/[DATE_TODAY]` 中，文件名格式为 `csv_file_[TIME_NOW]`
+
+## Tested Environments | 测试环境
+
+- macOS Monterey 12.2.1
+- Python 3.9.10
+- PyCharm 2021.3
