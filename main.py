@@ -6,8 +6,13 @@
 import configparser
 from microsoft_order_crawler import *
 
+config_file = "config.conf"
 conf = configparser.RawConfigParser()
-conf.read("config.conf")
+if os.path.isfile(config_file):
+    conf.read(config_file)
+else:
+    print("The file `%s` not exsist." % config_file)
+    exit(255)
 str_request_verification_token = conf.get("config", "str_request_verification_token")
 str_amcsecauth = conf.get("config", "str_amcsecauth")
 

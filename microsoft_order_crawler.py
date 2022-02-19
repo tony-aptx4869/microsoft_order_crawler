@@ -52,7 +52,7 @@ class MicrosoftOrderCrawler:
         time_now = time.strftime("%H-%M-%S", time.localtime())
         dump_path = os.path.join("json_files", date_today)
         if not os.path.exists(dump_path):
-            os.mkdir(path=dump_path)
+            os.makedirs(name=dump_path, exist_ok=True)
         new_file_name = file_name + "_" + time_now + ".json"
         dump_file_path = os.path.join("json_files", date_today, new_file_name)
         dump_file = open(file=dump_file_path, mode='w', encoding='utf-8')
@@ -178,7 +178,7 @@ class MicrosoftOrderCrawler:
         if self.new_orders_list.__len__():
             csv_file_path_root = os.path.join("csv_files", self.date_today)
             if not os.path.exists(csv_file_path_root):
-                os.mkdir(path=csv_file_path_root)
+                os.makedirs(name=csv_file_path_root, exist_ok=True)
             csv_file_name = "csv_file_" + time.strftime("%H-%M-%S") + ".csv"
             csv_file_path = os.path.join(csv_file_path_root, csv_file_name)
             csv_file = open(file=csv_file_path, mode='w', encoding='utf-8')
