@@ -12,7 +12,7 @@ import os
 class MicrosoftOrderCrawler:
     orders_list: list[dict] = []
     new_orders_list: list[dict] = []
-    continue_flag: bool = False
+    continue_flag: bool = True
     str_continuation_token: str = "FirstPage"
     date_today: str = time.strftime("%Y-%m-%d", time.localtime())
     stupid_currency_codes = [
@@ -56,9 +56,9 @@ class MicrosoftOrderCrawler:
         new_file_name = file_name + "_" + time_now + ".json"
         dump_file_path = os.path.join("json_files", date_today, new_file_name)
         dump_file = open(file=dump_file_path, mode='w', encoding='utf-8')
-        dump_result = json.dump(obj=data_to_dump, fp=dump_file)
+        json.dump(obj=data_to_dump, fp=dump_file)
         dump_file.close()
-        return dump_result
+        return 0
 
     @staticmethod
     def searchFiles(path_root: str, search_key: str):
@@ -117,7 +117,6 @@ class MicrosoftOrderCrawler:
     def getOrders(self, str_request_verification_token: str, str_amcsecauth: str):
         if not self.orders_list.__len__():
             self.setSession(str_request_verification_token=str_request_verification_token, str_amcsecauth=str_amcsecauth)
-            self.aLoopGettingJSONData()
             while self.continue_flag:
                 self.aLoopGettingJSONData()
             self.dumpToFile(data_to_dump=self.orders_list, file_name="OrdersList")
@@ -200,4 +199,5 @@ class MicrosoftOrderCrawler:
             csv_file.close()
         else:
             print("self.new_orders_list is empty!")
+            return 255
         return 0
