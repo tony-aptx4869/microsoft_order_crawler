@@ -7,7 +7,7 @@ import configparser
 from microsoft_order_crawler import *
 
 
-def crawler():
+def crawler_method():
     config_file = "config.conf"
     conf = configparser.RawConfigParser()
     if os.path.isfile(config_file):
@@ -35,4 +35,4 @@ def crawler():
 
 
 if __name__ == '__main__':
-    crawler()
+    crawler_method()
