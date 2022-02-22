@@ -170,7 +170,7 @@ class MicrosoftOrderCrawler:
                 new_order_dict.update({'datetime': time.strftime("%Y-%m-%d %H:%M:%S")})
                 # print(new_order_dict)
                 self.new_orders_list.append(new_order_dict)
-                self.dumpToFile(data_to_dump=self.new_orders_list, file_name="New_Orders_List")
+            self.dumpToFile(data_to_dump=self.new_orders_list, file_name="New_Orders_List")
         return self.new_orders_list
 
     def generateCSVFile(self):
