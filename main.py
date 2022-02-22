@@ -19,7 +19,7 @@ def crawler_method():
     str_amcsecauth = conf.get("config", "str_amcsecauth")
 
     # crawler = MicrosoftOrderCrawler()
-    # crawler.setSession(str_request_verification_token=str_request_verification_token, str_amcsecauth=str_amcsecauth)
+    # crawler.updateSession(str_request_verification_token=str_request_verification_token, str_amcsecauth=str_amcsecauth)
     # json_data = crawler.getJSONData()
     # crawler.print(json_data)
     # str_continuation_token = "M10L0R0D0"

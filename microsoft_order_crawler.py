@@ -23,13 +23,11 @@ class MicrosoftOrderCrawler:
         self.session = requests.session()
         request_header = {
             'Connection': 'keep-alive',
-            'sec-ch-ua': '" Not A;Brand";v="99", "Chromium";v="98", "Microsoft Edge";v="98"',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/98.0.4758.82 Safari/537.36 Edg/98.0.1108.51',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 '
+                          '(KHTML, like Gecko) Version/15.3 Safari/605.1.15',
             'Accept': 'application/json, text/plain, */*',
-            'X-Requested-With': 'XMLHttpRequest',
             'Correlation-Context': 'v=1,ms.b.tel.market=en-US',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-US;q=0.7'
+            'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8'
         }
         self.session.headers.update(request_header)
         path_root = os.path.join("json_files", self.date_today)
@@ -75,13 +73,15 @@ class MicrosoftOrderCrawler:
     def print(something):
         print(type(something), something)
 
-    def setSession(self, str_request_verification_token: str, str_amcsecauth: str):
+    def updateSession(self, str_request_verification_token: str, str_amcsecauth: str):
         str_cookie = "AMCSecAuth=" + str_amcsecauth
         request_header = {
             '__RequestVerificationToken': str_request_verification_token,
             'Cookie': str_cookie
         }
         self.session.headers.update(request_header)
+        # print(self.session.headers)
+        return 0
 
     def getJSONData(self):
         path_root = os.path.join("json_files", self.date_today)
@@ -94,12 +94,13 @@ class MicrosoftOrderCrawler:
         else:
             request_url = "https://account.microsoft.com/billing/orders/list?period=AllTime&orderTypeFilter=All" \
                           "&filterChangeCount=1&isInD365Orders=true&isPiDetailsRequired=true&timeZoneOffsetMinutes=-480"
-            if self.continue_flag:
+            if self.continue_flag \
+                    and not self.str_continuation_token == "FirstPage":
                 request_url = request_url + "&continuationToken=" + self.str_continuation_token
             response = self.session.get(url=request_url)
             json_data = response.json()
             self.dumpToFile(data_to_dump=json_data, file_name=self.str_continuation_token)
-        print(type(json_data), json_data)
+        # print(type(json_data), json_data)
         return json_data
 
     def aLoopGettingJSONData(self):
@@ -116,7 +117,7 @@ class MicrosoftOrderCrawler:
 
     def getOrders(self, str_request_verification_token: str, str_amcsecauth: str):
         if not self.orders_list.__len__():
-            self.setSession(str_request_verification_token=str_request_verification_token, str_amcsecauth=str_amcsecauth)
+            self.updateSession(str_request_verification_token=str_request_verification_token, str_amcsecauth=str_amcsecauth)
             while self.continue_flag:
                 self.aLoopGettingJSONData()
             self.dumpToFile(data_to_dump=self.orders_list, file_name="OrdersList")
@@ -143,9 +144,9 @@ class MicrosoftOrderCrawler:
                 }
                 # Deal with stupid price format with stupid currency codes
                 if new_order_dict['currencyCode'] in self.stupid_currency_codes:
-                    print(new_order_dict['currencyCode'], new_order_dict['totalListPrice'])
+                    # print(new_order_dict['currencyCode'], new_order_dict['totalListPrice'])
                     new_order_dict['totalListPrice'] = new_order_dict['totalListPrice'].replace(',', '_').replace('.', ',').replace('_', '.')
-                    print(new_order_dict['totalListPrice'])
+                    # print(new_order_dict['totalListPrice'])
                 # Token Code (tokenCode) and Payment Instrument (paymentInstrument)
                 if order_dict['items'][0].__contains__('tokenDetails') \
                         and order_dict['items'][0]['tokenDetails'].__len__() \
@@ -194,8 +195,8 @@ class MicrosoftOrderCrawler:
                     str(order_dict['localSubmittedDate']), str(order_dict['hasMultipleItems']), str(order_dict['tokenCode']),
                     str(order_dict['paymentInstrument']), str(order_dict['datetime'])
                 ]
-                line_to_write = ",".join(values)
-                csv_file.writelines(line_to_write + '\n')
+                line_to_write = ",".join(values) + '\n'
+                csv_file.writelines(line_to_write)
             csv_file.close()
         else:
             print("self.new_orders_list is empty!")
