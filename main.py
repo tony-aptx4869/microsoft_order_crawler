@@ -13,7 +13,7 @@ def crawler_method():
     if os.path.isfile(config_file):
         conf.read(config_file)
     else:
-        print("The file `%s` not exsist." % config_file)
+        print("The file `%s` not exist." % config_file)
         exit(255)
     str_request_verification_token = conf.get("config", "str_request_verification_token")
     str_amcsecauth = conf.get("config", "str_amcsecauth")
