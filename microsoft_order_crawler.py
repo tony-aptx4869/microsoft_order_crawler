@@ -15,9 +15,9 @@ class MicrosoftOrderCrawler:
     continue_flag: bool = True
     str_continuation_token: str = "FirstPage"
     date_today: str = time.strftime("%Y-%m-%d", time.localtime())
-    stupid_currency_codes = [
-        "EUR", "HUF", "ARS", "RUB", "TRY",
-    ]
+    # stupid_currency_codes = [
+    #     "EUR", "HUF", "ARS", "RUB", "TRY", "CLP", "NOK"
+    # ]
 
     def __init__(self):
         self.session = requests.session()
@@ -142,11 +142,11 @@ class MicrosoftOrderCrawler:
                     'localSubmittedDate': order_dict['localSubmittedDate'],
                     'hasMultipleItems': order_dict['hasMultipleItems']
                 }
-                # Deal with stupid price format with stupid currency codes
-                if new_order_dict['currencyCode'] in self.stupid_currency_codes:
-                    # print(new_order_dict['currencyCode'], new_order_dict['totalListPrice'])
-                    new_order_dict['totalListPrice'] = new_order_dict['totalListPrice'].replace(',', '_').replace('.', ',').replace('_', '.')
-                    # print(new_order_dict['totalListPrice'])
+                # # Deal with stupid price format with stupid currency codes
+                # if new_order_dict['currencyCode'] in self.stupid_currency_codes:
+                #     # print(new_order_dict['currencyCode'], new_order_dict['totalListPrice'])
+                #     new_order_dict['totalListPrice'] = new_order_dict['totalListPrice'].replace(',', '_').replace('.', ',').replace('_', '.')
+                #     # print(new_order_dict['totalListPrice'])
                 # Token Code (tokenCode) and Payment Instrument (paymentInstrument)
                 if order_dict['items'][0].__contains__('tokenDetails') \
                         and order_dict['items'][0]['tokenDetails'].__len__() \
@@ -182,10 +182,14 @@ class MicrosoftOrderCrawler:
             csv_file_name = "csv_file_" + time.strftime("%H-%M-%S") + ".csv"
             csv_file_path = os.path.join(csv_file_path_root, csv_file_name)
             csv_file = open(file=csv_file_path, mode='w', encoding='utf-8')
-            csv_file.writelines("localTitle,orderId,vanityOrderId,currencyCode,localTotalInDecimal,"
-                                + "market,isEUMarket,itemTypeName,productId,totalListPrice,itemState,"
-                                + "daysFromPurchase,localSubmittedDate,hasMultipleItems,tokenCode,"
-                                + "paymentInstrument,datetime\n")
+            # csv_file.writelines("localTitle,orderId,vanityOrderId,currencyCode,localTotalInDecimal,"
+            #                     + "market,isEUMarket,itemTypeName,productId,totalListPrice,itemState,"
+            #                     + "daysFromPurchase,localSubmittedDate,hasMultipleItems,tokenCode,"
+            #                     + "paymentInstrument,datetime\n")
+            csv_file.writelines("localTitle\torderId\tvanityOrderId\tcurrencyCode\tlocalTotalInDecimal\t"
+                                + "market\tisEUMarket\titemTypeName\tproductId\ttotalListPrice\titemState\t"
+                                + "daysFromPurchase\tlocalSubmittedDate\thasMultipleItems\ttokenCode\t"
+                                + "paymentInstrument\tdatetime\n")
             for order_dict in self.new_orders_list:
                 values = [
                     str(order_dict['localTitle']), str(order_dict['orderId']), str(order_dict['vanityOrderId']),
@@ -195,7 +199,7 @@ class MicrosoftOrderCrawler:
                     str(order_dict['localSubmittedDate']), str(order_dict['hasMultipleItems']), str(order_dict['tokenCode']),
                     str(order_dict['paymentInstrument']), str(order_dict['datetime'])
                 ]
-                line_to_write = ",".join(values) + '\n'
+                line_to_write = "\t".join(values) + '\n'
                 csv_file.writelines(line_to_write)
             csv_file.close()
         else:
