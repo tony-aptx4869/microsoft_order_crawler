@@ -27,7 +27,7 @@ class MicrosoftOrderCrawler:
                           '(KHTML, like Gecko) Version/15.3 Safari/605.1.15',
             'Accept': 'application/json, text/plain, */*',
             'Correlation-Context': 'v=1,ms.b.tel.market=en-US',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8'
+            'Accept-Language': 'en-US;q=1'
         }
         self.session.headers.update(request_header)
         path_root = os.path.join("json_files", self.date_today)
@@ -74,7 +74,7 @@ class MicrosoftOrderCrawler:
         print(type(something), something)
 
     def updateSession(self, str_request_verification_token: str, str_amcsecauth: str):
-        str_cookie = "AMCSecAuth=" + str_amcsecauth
+        str_cookie = "AMCSecAuth=" + str_amcsecauth + ";market=US"
         request_header = {
             '__RequestVerificationToken': str_request_verification_token,
             'Cookie': str_cookie
@@ -126,51 +126,54 @@ class MicrosoftOrderCrawler:
     def generateNewOrdersList(self):
         if not self.new_orders_list.__len__():
             for order_dict in self.orders_list:
-                new_order_dict = {
-                    'localTitle': order_dict['items'][0]['localTitle'],
-                    'orderId': order_dict['orderId'],
-                    'vanityOrderId': order_dict['vanityOrderId'],
-                    'currencyCode': order_dict['currencyInfo']['currencyCode'],
-                    'localTotalInDecimal': order_dict['localTotalInDecimal'],
-                    'market': order_dict['market'],
-                    'isEUMarket': order_dict['isEUMarket'],
-                    'itemTypeName': order_dict['items'][0]['itemTypeName'],
-                    'productId': order_dict['items'][0]['productId'],
-                    'totalListPrice': order_dict['items'][0]['totalListPrice'],
-                    'itemState': order_dict['items'][0]['itemState'],
-                    'daysFromPurchase': order_dict['daysFromPurchase'],
-                    'localSubmittedDate': order_dict['localSubmittedDate'],
-                    'hasMultipleItems': order_dict['hasMultipleItems']
-                }
-                # # Deal with stupid price format with stupid currency codes
-                # if new_order_dict['currencyCode'] in self.stupid_currency_codes:
-                #     # print(new_order_dict['currencyCode'], new_order_dict['totalListPrice'])
-                #     new_order_dict['totalListPrice'] = new_order_dict['totalListPrice'].replace(',', '_').replace('.', ',').replace('_', '.')
-                #     # print(new_order_dict['totalListPrice'])
-                # Token Code (tokenCode) and Payment Instrument (paymentInstrument)
-                if order_dict['items'][0].__contains__('tokenDetails') \
-                        and order_dict['items'][0]['tokenDetails'].__len__() \
-                        and order_dict['items'][0]['tokenDetails'][0].__contains__('tokenCode'):
-                    new_order_dict.update({'tokenCode': order_dict['items'][0]['tokenDetails'][0]['tokenCode']})
-                elif order_dict.__contains__('paymentInstruments') \
+                order_items_array = order_dict['items']
+                for item_dict in order_items_array:
+                    new_order_dict = {
+                        'localTitle': item_dict['localTitle'],
+                        'orderId': order_dict['orderId'],
+                        'vanityOrderId': order_dict['vanityOrderId'],
+                        'currencyCode': order_dict['currencyInfo']['currencyCode'],
+                        'localTotalInDecimal': order_dict['localTotalInDecimal'],
+                        'market': order_dict['market'],
+                        'isEUMarket': order_dict['isEUMarket'],
+                        'itemTypeName': item_dict['itemTypeName'],
+                        'productId': item_dict['productId'],
+                        'totalListPrice': item_dict['totalListPrice'],
+                        'itemState': item_dict['itemState'],
+                        'daysFromPurchase': order_dict['daysFromPurchase'],
+                        'localSubmittedDate': order_dict['localSubmittedDate'],
+                        'hasMultipleItems': order_dict['hasMultipleItems']
+                    }
+                    # # Deal with stupid price format with stupid currency codes
+                    # if new_order_dict['currencyCode'] in self.stupid_currency_codes:
+                    #     # print(new_order_dict['currencyCode'], new_order_dict['totalListPrice'])
+                    #     new_order_dict['totalListPrice'] = new_order_dict['totalListPrice'].replace(',', '_').replace('.', ',').replace('_', '.')
+                    #     # print(new_order_dict['totalListPrice'])
+                    # Token Code (tokenCode) and Payment Instrument (paymentInstrument)
+                    if item_dict.__contains__('tokenDetails') \
+                        and item_dict['tokenDetails'].__len__() \
+                        and item_dict['tokenDetails'][0].__contains__('tokenCode'):
+                        new_order_dict.update({'tokenCode': item_dict['tokenDetails'][0]['tokenCode']})
+                    elif order_dict.__contains__('paymentInstruments') \
                         and order_dict['paymentInstruments'].__len__() \
                         and order_dict['paymentInstruments'][0].__contains__('id'):
-                    new_order_dict.update({'tokenCode': order_dict['paymentInstruments'][0]['id']})
-                else:
-                    new_order_dict.update({'tokenCode': "Unknown"})
-                if order_dict['items'][0].__contains__('tokenDetails') \
-                        and order_dict['items'][0]['tokenDetails'].__len__() \
-                        and order_dict['items'][0]['tokenDetails'][0].__contains__('state'):
-                    new_order_dict.update({'paymentInstrument': order_dict['items'][0]['tokenDetails'][0]['state']})
-                elif order_dict.__contains__('paymentInstruments') \
+                        new_order_dict.update({'tokenCode': order_dict['paymentInstruments'][0]['id']})
+                    else:
+                        new_order_dict.update({'tokenCode': "Unknown"})
+                    if item_dict.__contains__('tokenDetails') \
+                        and item_dict['tokenDetails'].__len__() \
+                        and item_dict['tokenDetails'][0].__contains__('state'):
+                        new_order_dict.update({'paymentInstrument': item_dict['tokenDetails'][0]['state']})
+                    elif order_dict.__contains__('paymentInstruments') \
                         and order_dict['paymentInstruments'].__len__() \
                         and order_dict['paymentInstruments'][0].__contains__('localNameAndTotalCharged'):
-                    new_order_dict.update({'paymentInstrument': order_dict['paymentInstruments'][0]['localNameAndTotalCharged']})
-                else:
-                    new_order_dict.update({'paymentInstrument': "Unknown"})
-                new_order_dict.update({'datetime': time.strftime("%Y-%m-%d %H:%M:%S")})
-                # print(new_order_dict)
-                self.new_orders_list.append(new_order_dict)
+                        new_order_dict.update(
+                        {'paymentInstrument': order_dict['paymentInstruments'][0]['localNameAndTotalCharged']})
+                    else:
+                        new_order_dict.update({'paymentInstrument': "Unknown"})
+                    new_order_dict.update({'datetime': time.strftime("%Y-%m-%d %H:%M:%S")})
+                    # print(new_order_dict)
+                    self.new_orders_list.append(new_order_dict)
             self.dumpToFile(data_to_dump=self.new_orders_list, file_name="New_Orders_List")
         return self.new_orders_list
 
